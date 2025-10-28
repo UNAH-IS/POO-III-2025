@@ -13,14 +13,14 @@
 <body>
     <header>
         <nav id="menu">
-            <img id="img-usuario" src="assets/img/profile-pics/goku.jpg" alt="Foto de perfil">
+            <img onclick="mostrarSeccionUsuarios()" id="img-usuario" src="assets/img/placeholder.png" alt="Foto de perfil">
             <div id="contenedor-coronas">
                 <i class="fa-solid fa-crown"></i>
-                2
+                <span id="contador-coronas">0</span>
             </div>
             <div id="contenedor-vidas">
                 <i class="fa-solid fa-heart"></i>
-                5
+                <span id="contador-vidas">0</span>
             </div>
         </nav>
     </header>
@@ -28,156 +28,30 @@
         <div id="contenedor-logo">
             <img src="assets/img/logo.png" alt="Logo de la app" id="logo">
         </div>
-        <section id="contenedor-categorias">
-            <div>
-                <div class="icono-categoria" style="background-color: #F27B7B">
-                    <i class="fa-solid fa-people-roof"></i>
-                </div>
-                <div>
-                    Family
-                </div>
-            </div>
-            <div>
-                <div class="icono-categoria" style="background-color: #E38AFD">
-                    <i class="fa-solid fa-dog"></i>
-                </div>
-                <div>
-                    Animals
-                </div>
-            </div>
-            <div>
-                <div class="icono-categoria seleccionado" style="background-color: #83F8A7">
-                    <i class="fa-solid fa-gift"></i>
-                </div>
-                <div>
-                    Events
-                </div>
-            </div>
-            <div>
-                <div class="icono-categoria" style="background-color: #967BF2">
-                    <i class="fa-solid fa-utensils"></i>
-                </div>
-                <div>
-                    Food
-                </div>
-            </div>
-            <div>
-                <div class="icono-categoria" style="background-color: #F2A07B">
-                    <i class="fa-solid fa-plane"></i>
-                </div>
-                <div>
-                    Travel
-                </div>
-            </div>
-            <div>
-                <div class="icono-categoria" style="background-color: #7BEDF2">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                </div>
-                <div>
-                    School
-                </div>
-            </div>
-        </section>
+        <section id="contenedor-categorias"></section>
     </section>
     <section id="seccion-preguntas">
         <div id="encabezado-pregunta">
-            <div id="numero-pregunta">1/5</div>
+            <div id="numero-pregunta">
+                <span id="numero-pregunta-actual"></span>/<span id="numero-pregunta-total"></span>
+            </div>
             <div>Traduce la siguiente palabra</div>
-            <div id="palabra">Hermana</div>
+            <div id="palabra"></div>
         </div>
-        <section id="opciones-respuestas">
-            <div>
-                <div class="opcion-respuesta">Brother</div>
-            </div>
-            <div>
-                <div class="opcion-respuesta">Mother</div>
-            </div>
-            <div>
-                <div class="opcion-respuesta">Water</div>
-            </div>
-            <div>
-                <div class="opcion-respuesta">Sister</div>
-            </div>
-        </section>
+        <section id="opciones-respuestas"></section>
         <div id="contenedor-botones">
-            <button id="boton-continuar">Continuar</button>
+            <button id="boton-cancelar" onclick="mostrarSeccionCategorias()">Cancelar</button>
+            <button id="boton-continuar" onclick="renderizarSiguientePregunta()">Continuar</button>
         </div>
     </section>
     <section id="seccion-usuarios">
         <div id ="encabezado-usuarios">
             <div>Usuario Autenticado</div>
         </div>
-        <section id="contenedor-usuarios">
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/gohan.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/goku.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/krilin.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/bulma.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/trunks.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/freezer.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/dodoria.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/cell.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/videl.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/vegeta.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-            <div>
-                <div class="opcion-usuario">
-                    <img src="assets/img/profile-pics/uub.jpg">
-                    <div>Majin Boo</div>
-                </div>
-            </div>
-        </section>
+        <section id="contenedor-usuarios"></section>
     </section>
-    <button id="boton-prueba">Prueba</button>
-    <script src="assets/js/pruebas.js"></script>
+    
+    <!-- <script src="assets/js/pruebas.js"></script> -->
     <script src="assets/js/data.js"></script>
     <script src="assets/js/controlador.js"></script>
 </body>

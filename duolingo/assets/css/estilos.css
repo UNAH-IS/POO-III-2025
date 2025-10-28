@@ -74,11 +74,11 @@ body {
     outline: 5px solid #D8D8D8;
 }
 
-.icono-categoria.seleccionado {
+.icono-categoria.aprobada {
     outline: 5px solid #FFC700;
 }
 
-#seccion-categorias, #seccion-preguntas {
+#seccion-usuarios, #seccion-preguntas {
     display: none;
 }
 
@@ -125,14 +125,22 @@ body {
     align-items: center;
 }
 
+#boton-continuar, #boton-cancelar {
+    background-color: white;
+    border-radius: 10px;
+    font-size: 1rem;
+    text-align: center;
+    padding: 8px 20px;
+}
+
 #boton-continuar {
     border: 2px solid #79C805;
-    background-color: white;
     color: #79C805;
-    border-radius: 10px;
-    font-size: 1.1rem;
-    text-align: center;
-    padding: 8px 30px;
+}
+
+#boton-cancelar {
+    border: 2px solid #c81c05;
+    color: #c81c05;
 }
 
 #contenedor-botones {
