@@ -4,6 +4,7 @@ var indicePreguntaActual = 0;
 var idCategoriaActual = null;
 var respuestasCorrectas = 0;
 var preguntaContestada = false;
+var usuarioActual = null;
 
 
 const mostrarSeccionUsuarios = () => { //Arrow function
@@ -24,6 +25,9 @@ const mostrarSeccionCategorias = () => {
 }
 
 const mostrarSeccionPreguntas = () => {
+    if (usuarioActual == null) {
+        return;
+    }
     console.log("Mostrar seccion preguntas");
     document.getElementById("seccion-usuarios").style.display = "none";
     document.getElementById("seccion-categorias").style.display = "none";
@@ -59,11 +63,17 @@ const renderizarListaCategorias = () => {
 }
 
 const renderizarPregunta = (idCategoria, indicePregunta) => {
+    if (usuarioActual == null) {
+        alert("Por favor selecciona un usuario primero.");
+        return;
+    }
+
     idCategoriaActual = idCategoria;
     const categoriaSeleccionada = categorias.find(categoria => categoria.id === idCategoria);
     console.log("Categoria seleccionada: ", categoriaSeleccionada);
 
     if (indicePregunta >= categoriaSeleccionada.preguntas.length) {
+        actualizarResultadoUsuario(categoriaSeleccionada);
         alert("¡Has completado la categoría!");
         indicePreguntaActual = 0;
         mostrarSeccionCategorias();
@@ -85,8 +95,29 @@ const renderizarPregunta = (idCategoria, indicePregunta) => {
     document.getElementById("numero-pregunta-total").innerText = categoriaSeleccionada.preguntas.length;
 }
 
+const actualizarResultadoUsuario = (categoriaSeleccionada) => {
+    const resultadoCategoriaActual = usuarioActual.resultados.find(resultado => resultado.category === categoriaSeleccionada.id);
+    if (resultadoCategoriaActual != null) {
+        resultadoCategoriaActual.correctas = respuestasCorrectas;
+        resultadoCategoriaActual.incorrectas = categoriaSeleccionada.preguntas.length - respuestasCorrectas;
+        resultadoCategoriaActual.aprobada = respuestasCorrectas == categoriaSeleccionada.preguntas.length;
+        if (resultadoCategoriaActual.aprobada) {
+            usuarioActual.coronas += 1;
+        }
+    } else {
+        usuarioActual.resultados.push({
+            category: categoriaSeleccionada.id,
+            aprobada: respuestasCorrectas == categoriaSeleccionada.preguntas.length,
+            correctas: respuestasCorrectas,
+            incorrectas: categoriaSeleccionada.preguntas.length - respuestasCorrectas
+        });
+    }
+    renderizarUsuarioSeleccionado(usuarioActual.id);
+}
+
 const renderizarUsuarioSeleccionado = (idUsuario) => {
     const usuarioSeleccionado = usuarios.find(usuario => usuario.id === idUsuario);
+    usuarioActual = usuarioSeleccionado;
     console.log("Usuario seleccionado: ", usuarioSeleccionado);
     categorias.forEach(categoria => {
         document.getElementById('categoria-'+categoria.id).classList.remove('aprobada');
@@ -121,6 +152,10 @@ const verificarRespuesta = (palabra, correcta, etiqueta) => {
         respuestasCorrectas++;
     } else {
         etiqueta.classList.add("incorrecta");
+        if (usuarioActual.vidas > 0) {
+            usuarioActual.vidas--;
+            document.getElementById("contador-vidas").innerText = usuarioActual.vidas;
+        }
     }
     preguntaContestada = true;
     console.log("Respuestas correctas hasta ahora: ", respuestasCorrectas); 
