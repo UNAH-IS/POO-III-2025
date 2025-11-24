@@ -1,3 +1,5 @@
+let categorias = [];
+let usuarios = [];
 console.log("Categorias: ", categorias);
 console.log("Usuarios: ", usuarios);
 var indicePreguntaActual = 0;
@@ -6,6 +8,73 @@ var respuestasCorrectas = 0;
 var preguntaContestada = false;
 var usuarioActual = null;
 
+async function funcionAsincrona() {
+
+}
+
+const cargarCategorias = async () => {
+    console.log("Cargar categorias desde el backend");
+    const resultadoPeticion = await fetch('http://localhost:3000/categorias', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }); //10seg
+
+    categorias = await resultadoPeticion.json(); //5seg   
+    renderizarListaCategorias();
+    console.log("Categorias obtenidas del backend: ", categorias);
+}
+
+const cargarUsuarios = async () => {
+    console.log("Cargar usuarios desde el backend");
+    const resultadoPeticion = await fetch('http://localhost:3000/usuarios', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }); //10seg
+
+    usuarios = await resultadoPeticion.json(); //5seg   
+    renderizarListaUsuarios();
+    console.log("Usuarios obtenidas del backend: ", usuarios);
+}
+
+const obtenerDetallesUsuarioSeleccionado = async (idUsuario) => {
+    //1. ir al servidor y obtener los detalles del usuario
+    const resultadoDetalleUsuario = await fetch(`http://localhost:3000/usuarios/${idUsuario}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    const resultado = await resultadoDetalleUsuario.json();
+    usuarioActual = resultado.usuario;
+    console.log("Detalles del usuario obtenido del backend: ", usuarioActual);
+    //2. renderizar los detalles en la interfaz
+    renderizarUsuarioSeleccionado(idUsuario); 
+    mostrarSeccionCategorias();
+}
+
+const obtenerPreguntasCategoria = async (idCategoria) => {
+    const resultado = await fetch(`http://localhost:3000/categorias/${idCategoria}/preguntas`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+    const resultadoJson = await resultado.json();
+    const preguntas = resultadoJson.preguntas;
+    console.log("Preguntas obtenidas del backend: ", preguntas);
+    return preguntas;
+}
+
+
+cargarCategorias();
+cargarUsuarios();
 
 const mostrarSeccionUsuarios = () => { //Arrow function
     console.log("Mostrar seccion usuarios");
@@ -39,7 +108,7 @@ const renderizarListaUsuarios = () => {
     for (let i=0; i< usuarios.length; i++) {
         document.getElementById("contenedor-usuarios").innerHTML += 
                     `<div>
-                        <div class="opcion-usuario" onclick="renderizarUsuarioSeleccionado(${usuarios[i].id}); mostrarSeccionCategorias()">
+                        <div class="opcion-usuario" onclick="obtenerDetallesUsuarioSeleccionado(${usuarios[i].id})">
                             <img src="assets/img/${usuarios[i].imagenPerfil}">
                             <div>${usuarios[i].nombre}</div>
                         </div>
@@ -62,7 +131,8 @@ const renderizarListaCategorias = () => {
     });    
 }
 
-const renderizarPregunta = (idCategoria, indicePregunta) => {
+const renderizarPregunta = async (idCategoria, indicePregunta) => {
+    const preguntas = await obtenerPreguntasCategoria(idCategoria);
     if (usuarioActual == null) {
         alert("Por favor selecciona un usuario primero.");
         return;
@@ -72,14 +142,14 @@ const renderizarPregunta = (idCategoria, indicePregunta) => {
     const categoriaSeleccionada = categorias.find(categoria => categoria.id === idCategoria);
     console.log("Categoria seleccionada: ", categoriaSeleccionada);
 
-    if (indicePregunta >= categoriaSeleccionada.preguntas.length) {
-        actualizarResultadoUsuario(categoriaSeleccionada);
+    if (indicePregunta >= preguntas.length) {
+        await actualizarResultadoUsuario(categoriaSeleccionada, preguntas.length);
         alert("¡Has completado la categoría!");
         indicePreguntaActual = 0;
         mostrarSeccionCategorias();
         return;
     }
-    const preguntaSeleccionada = categoriaSeleccionada.preguntas[indicePregunta]; //Por ahora solo la primera pregunta
+    const preguntaSeleccionada = preguntas[indicePregunta]; //Por ahora solo la primera pregunta
     document.getElementById("palabra").innerHTML = preguntaSeleccionada.palabra;
 
     //Renderizar las opciones de respuestas
@@ -92,49 +162,47 @@ const renderizarPregunta = (idCategoria, indicePregunta) => {
     });
 
     document.getElementById("numero-pregunta-actual").innerText = indicePregunta + 1;
-    document.getElementById("numero-pregunta-total").innerText = categoriaSeleccionada.preguntas.length;
+    document.getElementById("numero-pregunta-total").innerText = preguntas.length;
 }
 
-const actualizarResultadoUsuario = (categoriaSeleccionada) => {
-    const resultadoCategoriaActual = usuarioActual.resultados.find(resultado => resultado.category === categoriaSeleccionada.id);
-    if (resultadoCategoriaActual != null) {
-        resultadoCategoriaActual.correctas = respuestasCorrectas;
-        resultadoCategoriaActual.incorrectas = categoriaSeleccionada.preguntas.length - respuestasCorrectas;
-        resultadoCategoriaActual.aprobada = respuestasCorrectas == categoriaSeleccionada.preguntas.length;
-        if (resultadoCategoriaActual.aprobada) {
-            usuarioActual.coronas += 1;
+const actualizarResultadoUsuario = async (categoriaSeleccionada, cantidadPreguntas) => {
+    const resultado = await fetch(`http://localhost:3000/usuarios/${usuarioActual.id}/resultados/${categoriaSeleccionada.id}`,
+        {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                aprobada: respuestasCorrectas == cantidadPreguntas,
+                correctas: respuestasCorrectas,
+                incorrectas: cantidadPreguntas - respuestasCorrectas
+            })
         }
-    } else {
-        usuarioActual.resultados.push({
-            category: categoriaSeleccionada.id,
-            aprobada: respuestasCorrectas == categoriaSeleccionada.preguntas.length,
-            correctas: respuestasCorrectas,
-            incorrectas: categoriaSeleccionada.preguntas.length - respuestasCorrectas
-        });
-    }
+    );
+
+    const resultadoJson = await resultado.json();
+    console.log("Resultado Backend: ", resultadoJson);
+
+    await obtenerDetallesUsuarioSeleccionado(usuarioActual.id);
     renderizarUsuarioSeleccionado(usuarioActual.id);
 }
 
 const renderizarUsuarioSeleccionado = (idUsuario) => {
-    const usuarioSeleccionado = usuarios.find(usuario => usuario.id === idUsuario);
-    usuarioActual = usuarioSeleccionado;
-    console.log("Usuario seleccionado: ", usuarioSeleccionado);
+    console.log("Usuario seleccionado: ", usuarioActual);
     categorias.forEach(categoria => {
         document.getElementById('categoria-'+categoria.id).classList.remove('aprobada');
     });
 
-
     // Marcar las categorias aprobadas
-    usuarioSeleccionado.resultados.forEach(resultado => {
+    usuarioActual.resultados.forEach(resultado => {
         if (resultado.aprobada){
             document.getElementById('categoria-'+resultado.category).classList.add('aprobada');
         }
     });
 
-
-    document.getElementById("img-usuario").attributes.src.value = `assets/img/${usuarioSeleccionado.imagenPerfil}`;
-    document.getElementById("contador-coronas").innerText = usuarioSeleccionado.coronas;
-    document.getElementById("contador-vidas").innerText = usuarioSeleccionado.vidas;
+    document.getElementById("img-usuario").attributes.src.value = `assets/img/${usuarioActual.imagenPerfil}`;
+    document.getElementById("contador-coronas").innerText = usuarioActual.coronas;
+    document.getElementById("contador-vidas").innerText = usuarioActual.vidas;
 }
 
 const renderizarSiguientePregunta = () => {
@@ -160,5 +228,5 @@ const verificarRespuesta = (palabra, correcta, etiqueta) => {
     preguntaContestada = true;
     console.log("Respuestas correctas hasta ahora: ", respuestasCorrectas); 
 }
-renderizarListaCategorias();
-renderizarListaUsuarios();
+
+
